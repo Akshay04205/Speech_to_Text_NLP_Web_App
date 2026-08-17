@@ -15,7 +15,7 @@ The project is designed as a practical implementation of Natural Language Proces
 * [Project Architecture](#project-architecture)
 * [Application Workflow](#application-workflow)
 * [Technologies Used](#technologies-used)
-* [Project Structure](#project-structure)
+* [Structure](#project-structure)
 * [Requirements](#requirements)
 * [Django Setup](#django-setup)
 * [Running the Application](#running-the-application)
