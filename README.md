@@ -309,61 +309,21 @@ The project can be developed using:
 
 ---
 
-# Project Structure
-
-A typical project structure is:
-
-```text
+## Structure
+```
 speech_to_text_project/
-|
-|-- manage.py
-|
-|-- db.sqlite3
-|
-|-- config/
-|   |
-|   |-- __init__.py
-|   |-- settings.py
-|   |-- urls.py
-|   |-- asgi.py
-|   |-- wsgi.py
-|
-|-- transcriber/
-|   |
-|   |-- __init__.py
-|   |-- admin.py
-|   |-- apps.py
-|   |-- models.py
-|   |-- views.py
-|   |-- urls.py
-|   |-- tests.py
-|   |
-|   |-- migrations/
-|   |   |-- __init__.py
-|   |
-|   |-- templates/
-|   |   |-- transcriber/
-|   |       |-- index.html
-|   |
-|   |-- static/
-|       |-- transcriber/
-|           |-- style.css
-|
-|-- transcriber/
-|   |
-|   |-- nlp_model.py
-|
-|-- media/
-|
-|-- requirements.txt
-|
-|-- .gitignore
-|
-|-- .env
-|
-|-- .env.example
-|
-|-- README.md
+├── manage.py
+├── requirements.txt
+├── db.sqlite3                (created after first migrate)
+├── speech_to_text_project/   # Django project settings
+│   ├── settings.py
+│   ├── urls.py
+│   └── ...
+└── transcriber/               # The app
+    ├── nlp_model.py           # <-- PASTE YOUR NLP CODE HERE
+    ├── views.py                # handles the /transcribe/ endpoint
+    ├── urls.py
+    └── templates/transcriber/index.html   # the frontend page
 ```
 
 The exact structure may differ depending on the final version of the project.
