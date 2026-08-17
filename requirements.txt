@@ -1,0 +1,7 @@
+Django>=5.0,<7.0
+
+# Add your NLP project's own dependencies below, e.g.:
+# openai-whisper
+# torch
+# speechrecognition
+# vosk

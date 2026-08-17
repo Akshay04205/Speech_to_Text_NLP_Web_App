@@ -1,0 +1,306 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Speech To Text</title>
+
+    <!-- CHANGED: Connect the separate Django CSS file. -->
+    <link rel="stylesheet" href="{% static 'transcriber/style.css' %}">
+</head>
+
+<body>
+
+    <!-- CHANGED: Added the main container.
+         Problem: Your CSS was trying to center .container,
+         but the HTML did not contain one.
+         Fix: Put the complete application inside .container. -->
+
+    <div class="container">
+
+        <h1>Speech To Text</h1>
+
+
+        <!-- CHANGED: One button handles both Start and Stop. -->
+        <button id="recordBtn" onclick="toggleRecording()">
+            Start Recording
+        </button>
+
+
+        <!-- Restart button -->
+        <button id="restartBtn" onclick="restartAll()">
+            Restart
+        </button>
+
+
+        <!-- Status -->
+        <p id="status">
+            Status: Idle
+        </p>
+
+
+        <!-- Language -->
+        <p class="language">
+            Language: <span id="language">-</span>
+        </p>
+
+
+        <hr>
+
+
+        <!-- Transcript -->
+        <div class="result-section">
+
+            <h2>Transcript:</h2>
+
+            <div class="result" id="transcript">
+                Your transcript will appear here...
+            </div>
+
+        </div>
+
+
+        <!-- Translation -->
+        <div class="result-section">
+
+            <h2>Translation:</h2>
+
+            <div class="result" id="translation">
+                Your translation will appear here...
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+
+        async function toggleRecording() {
+
+            if (!isRecording) {
+
+                // ============================
+                // START RECORDING
+                // ============================
+
+                try {
+
+                    const stream =
+                        await navigator.mediaDevices.getUserMedia({
+                            audio: true
+                        });
+
+
+                    mediaRecorder =
+                        new MediaRecorder(stream);
+
+                    audioChunks = [];
+
+
+                    mediaRecorder.ondataavailable =
+                        function (event) {
+
+                            audioChunks.push(event.data);
+
+                        };
+
+
+                    mediaRecorder.onstop =
+                        function () {
+
+                            const audioBlob =
+                                new Blob(
+                                    audioChunks,
+                                    { type: "audio/webm" }
+                                );
+
+
+                            sendAudioToServer(audioBlob);
+
+
+                            // CHANGED: Stop microphone after recording.
+                            stream.getTracks().forEach(
+                                track => track.stop()
+                            );
+
+                        };
+
+
+                    mediaRecorder.start();
+
+                    isRecording = true;
+
+
+                    // CHANGED: Update button while recording.
+                    document.getElementById("recordBtn").innerText =
+                        "Stop Recording";
+
+                    document.getElementById("recordBtn")
+                        .classList.add("recording");
+
+
+                    document.getElementById("status").innerText =
+                        "Recording...";
+
+                }
+
+                catch (err) {
+
+                    document.getElementById("status").innerText =
+                        "Microphone access denied or unavailable: " + err;
+
+                }
+
+            }
+
+            else {
+
+                // ============================
+                // STOP RECORDING
+                // ============================
+
+                mediaRecorder.stop();
+
+                isRecording = false;
+
+
+                // CHANGED: Change button back to Start Recording.
+                document.getElementById("recordBtn").innerText =
+                    "Start Recording";
+
+                document.getElementById("recordBtn")
+                    .classList.remove("recording");
+
+
+                document.getElementById("status").innerText =
+                    "Processing...";
+
+            }
+
+        }
+
+
+        // ============================
+        // SEND AUDIO TO DJANGO
+        // ============================
+
+        function sendAudioToServer(audioBlob) {
+
+            const formData = new FormData();
+
+
+            // CHANGED: Add microphone recording to the POST request.
+            formData.append(
+                "audio",
+                audioBlob,
+                "recording.webm"
+            );
+
+
+            fetch("/transcribe/", {
+
+                method: "POST",
+
+                body: formData
+
+            })
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                if (data.error) {
+
+                    document.getElementById("status").innerText =
+                        "Error: " + data.error;
+
+                    return;
+
+                }
+
+
+                // Display detected language.
+                document.getElementById("language").innerText =
+                    data.language;
+
+
+                // Display transcript.
+                document.getElementById("transcript").innerText =
+                    data.transcript;
+
+
+                // Display English translation.
+                document.getElementById("translation").innerText =
+                    data.translation;
+
+
+                document.getElementById("status").innerText =
+                    "Done.";
+
+            })
+
+            .catch(err => {
+
+                document.getElementById("status").innerText =
+                    "Request failed: " + err;
+
+            });
+
+        }
+
+
+        // ============================
+        // RESTART
+        // ============================
+
+        function restartAll() {
+
+            // CHANGED: Reset all application values.
+            isRecording = false;
+            audioChunks = [];
+
+
+            // Reset button.
+            document.getElementById("recordBtn").innerText =
+                "Start Recording";
+
+            document.getElementById("recordBtn")
+                .classList.remove("recording");
+
+
+            // Reset language.
+            document.getElementById("language").innerText =
+                "-";
+
+
+            // Reset transcript.
+            document.getElementById("transcript").innerText =
+                "Your transcript will appear here...";
+
+
+            // Reset translation.
+            document.getElementById("translation").innerText =
+                "Your translation will appear here...";
+
+
+            // Reset status.
+            document.getElementById("status").innerText =
+                "Status: Idle";
+
+        }
+
+    </script>
+
+</body>
+
+</html>
