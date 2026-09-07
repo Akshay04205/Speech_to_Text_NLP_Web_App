@@ -320,7 +320,7 @@ speech_to_text_project/
 │   ├── urls.py
 │   └── ...
 └── transcriber/               # The app
-    ├── nlp_model.py           # <-- PASTE YOUR NLP CODE HERE
+    ├── nlp_model.py           # NLP Model
     ├── views.py                # handles the /transcribe/ endpoint
     ├── urls.py
     └── templates/transcriber/index.html   # the frontend page
